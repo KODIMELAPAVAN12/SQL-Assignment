@@ -1,3 +1,4 @@
+--1
 CREATE TABLE employee (
     Empno int,
     Empname varchar(255),
@@ -49,6 +50,7 @@ values('40','Operations','Boston');
 insert into department(DeptNo,Dname,Loc)
 values('50','Purchase','Los Angeles');
 
+--1)b
 select * from employee;
 
 select * from department;
@@ -59,6 +61,7 @@ select Deptno,Dname from department;
 
 select distinct job from employee;
 
+--2
 select Empname from employee 
 where job='Analyst' and Salary > 2000;
 
@@ -89,7 +92,7 @@ where (1.20*salary)>3000;
 select empname from employee
 where not job='Manager';
 
-
+--3 DQL
 select count(*) from employee;
 
 select count(employee.empname) from employee,department
@@ -110,6 +113,7 @@ select current_date;
 select empname,sum(salary) from employee
 group by empname;
 
+--4 CLAUSES
 select job,count(empname) from employee
 group by job;
 
@@ -124,7 +128,78 @@ select empname,sum(salary) from employee
 group by empname
 order by sum(salary) desc;
 
+--4)B
+select empname from employee where salary=(select max(salary) from employee);
 
+select empname from employee where salary>(select avg(salary) from employee);
 
+select empname from employee where salary>(select salary from employee where deptno=30);
+
+select empname from employee where salary>(select salary from employee e,department d  where e.deptno=d.deptno 
+and d.dname='Sales');
+
+select empname from employee where mgr in (select empno from employee where empname='James');
+
+select empname from employee where mgr in (select empno from employee where empname='James')and salary>=(select avg(salary) from employee);
+
+--5 JOINS
+select e.empno,e.empname,e.deptno,d.dname from employee e,department d where e.deptno=d.deptno;
+
+select e1.empname ename , e2.empname manager from employee e1,employee e2 where e1.mgr=e2.empno;
+
+SELECT e1.empname FROM employee e1,employee e2 WHERE e1.empno=e2.mgr AND e1.deptno=e2.deptno;
+
+select * from employee e1 left join department d1 on e1.deptno=d1.deptno;
+select * from employee e1 right join department d1 on e1.deptno=d1.deptno;
+select * from employee e1 full outer join department d1 on e1.deptno=d1.deptno;
+
+--5)B
+create table Cust_dtls (
+cust_no int unique not null,
+cust_name varchar(50) check (upper(cust_name)= cust_name),
+cust_city varchar(20) check (cust_city like 'H%')
+);
+alter table employee add constraint PK_employee primary key (empno);
+
+alter table employee alter column empname set not null;
+
+alter table employee alter column comm set default 0;
+
+alter table employee  add constraint FK_Employee foreign key (deptno) references department (deptno);
+
+alter table employee add constraint FK_Employee  foreign key (mgr) references Employee (empno);
+
+--all the constraints on the dept and emp table 
+select * from pg_catalog.pg_constraint pc;
+
+--Add and drop the constraints on Loc column of dept table that restricts the Loc column to have only unique values.
+alter table department add constraint U_Loc unique(Loc);
+alter table department drop constraint U_Loc;
+
+--Disable the check constraint on cust_name column from cust_dtls table.
+alter table cust_dtls drop constraint cust_dtls_cust_name_check;
+
+--6)A DDL
+--Add a new column to the dept table called Budget of size 10.
+alter table department add column budget numeric(10);
+--Modify the size of the Budget field to size 12 and add a default value of 5000.
+alter table department alter column budget set data type numeric(12);
+alter table department alter column budget set default 5000;
+
+--Drop the employee table. (created by students and not the default table)
+drop table employee;
+
+--6)b DML
+--Rename the department table as dept_details.
+alter table department rename to dept_details;
+
+--Delete the department with location NewYork.
+delete from dept_details where loc like 'NewYork';
+
+--Delete the records of all employees whose salary is below the average salary at the organization.
+delete from employee where salary <(select avg(salary)from employee );
+
+--Update the deptno and dname of dept table with values 70 and ‘Distribution’ where dname is ‘Sales’.
+update dept_details set dname='Distribution' ,deptno =70 where dname like 'Sales';
 
 
